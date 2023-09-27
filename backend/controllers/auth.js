@@ -43,6 +43,13 @@ exports.loginUser = async (req, res) => {
 
         console.log(guilds);
 
+        if (guilds.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: "No guilds found",
+            });
+        }
+
         const payload = {
             userId: id,
             guildId: guilds[0].guildId,
