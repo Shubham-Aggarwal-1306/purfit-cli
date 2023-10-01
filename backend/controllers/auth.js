@@ -64,6 +64,7 @@ exports.loginUser = async (req, res) => {
         res.status(200).json({
             success: true,
             data: {
+                username,
                 accessToken,
                 guilds,
             },

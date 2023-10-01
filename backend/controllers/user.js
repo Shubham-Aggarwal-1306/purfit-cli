@@ -45,12 +45,18 @@ exports.getRank = async (req, res) => {
         const { userId, guildId } = req;
 
         const history = await getActivityCount({ userId, guildId });
-
+        let badgesValid = badges.map((badge) => {
+            return {
+                ...badge,
+                valid: false
+            }
+        });
         let badge = badges[0];
         let index = 0;
         for (const element of badges) {
             if (element.activites <= history) {
                 badge = element;
+                badgesValid[index].valid = true;
                 index++;
             }
         }
@@ -58,7 +64,8 @@ exports.getRank = async (req, res) => {
         res.status(200).json({
             success: true,
             data: {
-                badge
+                badge,
+                badges: badgesValid,
             },
         });
     } catch (err) {

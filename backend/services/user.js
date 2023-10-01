@@ -62,47 +62,32 @@ exports.getPreferences = async (data) => {
         console.log(err);
     }
 }
-// Last 6 month history by daily count using aggregate timeStamps
+
 exports.getHistory = async (data) => {
     try {
         const { userId, guildId } = data;
 
-        const history = await User.aggregate([
-            {
-                $match: {
-                    userId,
-                    guildId,
-                },
-            },
-            {
-                $match: {
-                    'timeStamp': {
-                        $gte: new Date(new Date().setMonth(new Date().getMonth() - 6)),
-                    },
-                },
-            },
-            {
-                $group: {
-                    _id: {
-                        $dateToString: {
-                            format: '%Y-%m-%d',
-                            date: '$timeStamp',
-                        },
-                    },
-                    count: {
-                        $sum: 1,
-                    },
-                },
-            },
-            {
-                $sort: {
-                    _id: 1,
-                },
-            },
-        ]);
+        // Daily Count of Activities
+        const activityHistory = await User.findOne({ userId, guildId }).select('activityHistory -_id');
+        if (!activityHistory) return;
+        
+        // Date Wise Count of Activities
 
-        console.log(history);
+        let history = [];
 
+        activityHistory.activityHistory.forEach((activity) => {
+            let date = new Date(activity.timestamp);
+            let dateString = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+            let index = history.findIndex((item) => item.date === dateString);
+            if (index === -1) {
+                history.push({
+                    date: dateString,
+                    count: 1,
+                });
+            } else {
+                history[index].count++;
+            }
+        });
         return history;
     }
     catch (err) {
